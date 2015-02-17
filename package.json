@@ -21,7 +21,9 @@
   "homepage": "https://github.com/magistrula/socket.io-monitor",
   "dependencies": {
     "socket.io": "~1.3.4",
-    "express": "~4.11.2"
+    "express": "~4.11.2",
+    "socketio-wildcard": "~0.1.1",
+    "socket.io-parser": "~2.2.3"
   },
   "devDependencies": {
     "chai": "~2.0.0",
