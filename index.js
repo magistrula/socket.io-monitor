@@ -4,7 +4,9 @@ var socketio = require('socket.io'),
     monitor = require('./monitor');
 
 var srv = http.createServer();
-var io = socketio(srv);
+var io = socketio(srv, {
+  pingInterval : 10000
+});
 
 srv.listen(5000, function(){
   console.log(arguments);
@@ -43,3 +45,4 @@ io.on('connect', function(socket){
     // console.log('message:', packet);
   });
 });
+

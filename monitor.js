@@ -1,19 +1,26 @@
-var parser = require('socket.io-parser');
+var socketio = require('socket.io'),
+    parser = require('socket.io-parser'),
+    http = require('http'),
+    express = require('express');
+
 var MessageCounter = require('./MessageCounter');
-var http = require('http');
-var express = require('express');
 
-var app = express(http.createServer);
+var app = express();
+var srv = http.createServer(app);
+var io = socketio(srv);
 
-app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+io.on('connect', function(socket){
+  console.log('Socket connected to monitoring server');
+  socket.join('messages');
 });
+
+app.use(express.static(__dirname + '/app'));
 
 app.get('/messages', function(req, res){
   res.json(messageCounter.data);
 });
 
-app.listen(5001, function(){
+srv.listen(5001, function(){
   console.log('monitor listening on 5001');
 });
 
@@ -22,6 +29,10 @@ messageCounter = new MessageCounter();
 setInterval(function(){
   // console.log(messageCounter.data);
 }, 1000);
+
+var broadcastSocketEvent = function(socketId, type) {
+  io.to('messages').emit(type + '_received', {socketId: socketId, date: new Date()});
+}
 
 var decodePacketEvent = function(packet, callback){
   var decoder = new parser.Decoder();
@@ -34,15 +45,19 @@ var decodePacketEvent = function(packet, callback){
 }
 
 module.exports = function(socket, next){
-  debugger;
-
   socket.conn.on('packetCreate', function(packet){
+    if (packet.type === 'pong'){
+      broadcastSocketEvent(socket.id, packet.type);
+    }
     decodePacketEvent(packet, function(eventName){
       messageCounter.incrementOutbound(packet.type, eventName);
     });
   });
 
   socket.conn.on('packet', function(packet){
+    if (packet.type === 'ping'){
+      broadcastSocketEvent(socket.id, packet.type);
+    }
     decodePacketEvent(packet, function(eventName){
       messageCounter.incrementInbound(packet.type, eventName);
     });

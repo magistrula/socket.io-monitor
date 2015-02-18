@@ -1,0 +1,97 @@
+<!doctype html>
+<html ng-app="monitor">
+  <head>
+    <title>Socket.IO Monitor</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <style type="text/css">
+      body { padding : 15px; color: #f1f1f1; background-color: #333;}
+      @-webkit-keyframes slideright {
+        from {
+          left: 0;
+          /*width: 300%; */
+        }
+
+        to {
+          left: 1000px;
+          /*width: 100%;*/
+        }
+      }
+
+      .bar {
+        -webkit-animation-duration: 5s;
+        -webkit-animation-name: slideright;
+      }
+
+      .sockets {
+        width: 1400px;
+        height: 200px;
+        position: relative;
+      }
+      .bar {
+        width: 2px;
+        height: 100px;
+        background-color: white;
+        position: absolute;
+        /*z-index: 100;*/
+/*        -webkit-transition: 5s all;
+        transform: translateX(1400px);*/
+      }
+      .socket {
+        width: 10px;
+        height: 10px;
+        margin-right: 10px;
+        background-color: #18A81B;
+        border-radius: 50%;
+        position: absolute;
+      }
+      .socket.active {background-color: #20E325;}
+    </style>
+  </head>
+  <body>
+    <h1>Socket.IO Monitor</h1>
+    <div class="sockets" ng-controller="radarController">
+      <div class="bar"></div>
+      <dot socket-id="socketId"
+           socket-offset="layoutInfo.offset"
+           socket-active="layoutInfo.active"
+           ng-repeat="(socketId, layoutInfo) in monitoredSockets"></dot>
+    </div>
+    <div ng-controller="messagesController" ng-show="true">
+      <h3>Inbound Data</h3>
+      <table class="table table-bordered table-condensed">
+        <caption>Every message coming in.</caption>
+        <tr>
+          <th>Type</th>
+          <th>Name</th>
+          <th>Count</th>
+        </tr>
+        <tr ng-repeat="data in inboundData">
+          <td>{{data.type}}</td>
+          <td>{{data.name}}</td>
+          <td>{{data.count}}</td>
+        </tr>
+      </table>
+      <h3>Outbound Data</h3>
+      <table class="table table-bordered table-condensed">
+        <caption>Every message going out.</caption>
+        <tr>
+          <th>Type</th>
+          <th>Name</th>
+          <th>Count</th>
+        </tr>
+        <tr ng-repeat="data in outboundData">
+          <td>{{data.type}}</td>
+          <td>{{data.name}}</td>
+          <td>{{data.count}}</td>
+        </tr>
+      </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="//code.angularjs.org/1.3.10/angular-route.js"></script>
+    <script src="./app.js"></script>
+    <script src="./radar.js"></script>
+  </body>
+</html>
