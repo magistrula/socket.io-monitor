@@ -1,43 +1,51 @@
 var parser = require('socket.io-parser');
-var inbound = 0;
-var outbound = 0;
+var MessageCounter = require('./MessageCounter');
+var http = require('http');
+var express = require('express');
 
-var messageCounts = {
-  inbound : {},
-  outbound : {}
-}
+var app = express(http.createServer);
+
+app.get('/', function(req, res){
+  res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/messages', function(req, res){
+  res.json(messageCounter.data);
+});
+
+app.listen(5001, function(){
+  console.log('monitor listening on 5001');
+});
+
+messageCounter = new MessageCounter();
 
 setInterval(function(){
-  console.log(messageCounts);
+  // console.log(messageCounter.data);
 }, 1000);
 
-function incrementCounter(direction, type, data){
-  if (typeof messageCounts[direction] === 'undefined'){
-    messageCounts[direction] = {}
-  }
-  if (typeof messageCounts[direction][type] === 'undefined'){
-    messageCounts[direction][type] = 0;
-  }
-  messageCounts[direction][type] += 1;
+var decodePacketEvent = function(packet, callback){
+  var decoder = new parser.Decoder();
+  decoder.on('decoded', function(decodedPacket){
+    var eventName = decodedPacket.data ? decodedPacket.data[0] : 'empty';
+    callback(eventName);
+  });
+  decoder.add(packet.data || '');
+  decoder.destroy();
 }
 
 module.exports = function(socket, next){
+  debugger;
+
   socket.conn.on('packetCreate', function(packet){
-    var decoder = new parser.Decoder();
-    decoder.on('decoded', function(decodedPacket){
-      incrementCounter('outbound', packet.type, decodedPacket.data);
+    decodePacketEvent(packet, function(eventName){
+      messageCounter.incrementOutbound(packet.type, eventName);
     });
-    decoder.add(packet.data || '');
-    decoder.destroy();
   });
 
   socket.conn.on('packet', function(packet){
-    var decoder = new parser.Decoder();
-    decoder.on('decoded', function(decodedPacket){
-      incrementCounter('inbound', packet.type, decodedPacket.data);
+    decodePacketEvent(packet, function(eventName){
+      messageCounter.incrementInbound(packet.type, eventName);
     });
-    decoder.add(packet.data || '');
-    decoder.destroy();
   });
 
   next();
