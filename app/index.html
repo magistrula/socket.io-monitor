@@ -17,10 +17,7 @@
         <div class="ring ring-6"></div>
         <div class="bar" ng-class="{active: firstPongProcessed}"></div>
         <div class="origin">
-          <socket-dot socket-id="socketId"
-               socket-offset="layoutInfo.offset"
-               socket-active="layoutInfo.active"
-               ng-repeat="(socketId, layoutInfo) in monitoredSockets"></socket-dot>
+          <socket-dot socket="layoutInfo" ng-repeat="(socketId, layoutInfo) in monitoredSockets"></socket-dot>
         </div>
       </div>
     </div>

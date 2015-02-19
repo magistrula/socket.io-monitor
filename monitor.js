@@ -44,7 +44,20 @@ var decodePacketEvent = function(packet, callback){
   decoder.destroy();
 }
 
+var hostIo;
+
 module.exports = function(socket, next){
+  // if(!hostIo){
+  //   hostIo = socket.nsp;
+  //   hostIo.on('connect', function(){
+  //     broadcastSocketEvent(socket.id, 'connected');
+  //   });
+  // }
+
+  socket.on('disconnect', function(){
+    broadcastSocketEvent(socket.id, 'disconnected');
+  });
+
   socket.conn.on('packetCreate', function(packet){
     if (packet.type === 'pong'){
       broadcastSocketEvent(socket.id, packet.type);
@@ -55,6 +68,7 @@ module.exports = function(socket, next){
   });
 
   socket.conn.on('packet', function(packet){
+    console.log('ping', socket.id);
     if (packet.type === 'ping'){
       broadcastSocketEvent(socket.id, packet.type);
     }
